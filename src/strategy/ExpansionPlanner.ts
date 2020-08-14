@@ -11,7 +11,7 @@ import {MAX_OWNED_ROOMS, SHARD3_MAX_OWNED_ROOMS} from '../~settings';
 import {MIN_EXPANSION_DISTANCE} from './ExpansionEvaluator';
 
 
-const CHECK_EXPANSION_FREQUENCY = 1000;
+const CHECK_EXPANSION_FREQUENCY = 500;
 
 const UNOWNED_MINERAL_BONUS = 100;
 const CATALYST_BONUS = 75;
@@ -123,7 +123,7 @@ export class ExpansionPlanner implements IExpansionPlanner {
 					}
 				}
 				// Update best choices
-				if (score > bestScore && Game.map.isRoomAvailable(roomName)) {
+				if (score > bestScore && Game.map.getRoomStatus(roomName).status == 'normal') {
 					bestScore = score;
 					bestRoom = roomName;
 				}
