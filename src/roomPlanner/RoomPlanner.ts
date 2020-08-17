@@ -6,7 +6,7 @@ import {RoomIntel} from '../intel/RoomIntel';
 import {Energetics} from '../logistics/Energetics';
 import {Autonomy, getAutonomyLevel, Mem} from '../memory/Memory';
 import {Pathing} from '../movement/Pathing';
-import {BuildPriorities, DemolishStructurePriorities} from '../priorities/priorities_structures';
+import {BuildPriorities, BuildIncubatingPriorities, DemolishStructurePriorities} from '../priorities/priorities_structures';
 import {profile} from '../profiler/decorator';
 import {bullet} from '../utilities/stringConstants';
 import {hasMinerals, maxBy, onPublicServer} from '../utilities/utils';
@@ -724,8 +724,12 @@ export class RoomPlanner {
 		if (!this.map || this.map == {}) { // in case a map hasn't been generated yet
 			log.info(this.colony.name + ' does not have a room plan yet! Unable to build missing structures.');
 		}
+		let BuildPri: BuildableStructureConstant[] = BuildPriorities
+		if (this.colony.state.isIncubating) {
+			BuildPri = BuildIncubatingPriorities
+		}
 		// Build missing structures from room plan
-		for (const structureType of BuildPriorities) {
+		for (const structureType of BuildPri) {
 			if (this.map[structureType]) {
 				for (const pos of this.map[structureType]) {
 					if ((structureType == STRUCTURE_SPAWN || count > 0) && RoomPlanner.canBuild(structureType, pos)) {

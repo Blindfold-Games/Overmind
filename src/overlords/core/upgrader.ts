@@ -1,4 +1,6 @@
 import {Roles, Setups} from '../../creepSetups/setups';
+import {CombatCreepSetup} from '../../creepSetups/CombatCreepSetup';
+import {CreepSetup} from '../../creepSetups/CreepSetup';
 import {UpgradeSite} from '../../hiveClusters/upgradeSite';
 import {OverlordPriority} from '../../priorities/priorities_overlords';
 import {profile} from '../../profiler/decorator';
@@ -26,25 +28,33 @@ export class UpgradingOverlord extends Overlord {
 	}
 
 	init() {
-		if (this.colony.level < 3) { // can't spawn upgraders at early levels
+		if (this.colony.level < 2) { // can't spawn upgraders at early levels
 			return;
 		}
 		if (this.colony.assets.energy > UpgradeSite.settings.energyBuffer
-			|| this.upgradeSite.controller.ticksToDowngrade < 500) {
-			let setup = Setups.upgraders.default;
+			|| this.upgradeSite.controller.ticksToDowngrade < 500
+			|| this.colony.state.isIncubating) {
+			let setup: CreepSetup | CombatCreepSetup = Setups.upgraders.default;
 			if (this.colony.level == 8) {
 				setup = Setups.upgraders.rcl8;
 				if (this.colony.labs.length == 10 &&
 					this.colony.assets[RESOURCE_CATALYZED_GHODIUM_ACID] >= 4 * LAB_BOOST_MINERAL) {
 					setup = Setups.upgraders.rcl8_boosted;
 				}
-			}
-
-			if (this.colony.level == 8) {
 				this.wishlist(1, setup);
 			} else {
 				const upgradePowerEach = setup.getBodyPotential(WORK, this.colony);
-				const upgradersNeeded = Math.ceil(this.upgradeSite.upgradePowerNeeded / upgradePowerEach);
+				let upgradersNeeded = Math.ceil(this.upgradeSite.upgradePowerNeeded / upgradePowerEach);
+				if (this.colony.state.isIncubating) {
+					if (this.upgradeSite.link || this.upgradeSite.battery) {
+						setup = Setups.upgraders.remote_boosted
+					} else {
+						setup = Setups.pioneer
+					}
+					upgradersNeeded = Math.max(1, upgradersNeeded)
+					this.wishlist(upgradersNeeded, setup);
+					return;
+				}
 				this.wishlist(upgradersNeeded, setup);
 			}
 		}
@@ -87,11 +97,15 @@ export class UpgradingOverlord extends Overlord {
 				if (this.upgradeSite.battery && this.upgradeSite.battery.targetedBy.length == 0) {
 					upgrader.task = Tasks.recharge();
 				}
+				if (!this.upgradeSite.battery) {
+					upgrader.task = Tasks.recharge();
+				}
 			}
 		}
 	}
 
 	run() {
-		this.autoRun(this.upgraders, upgrader => this.handleUpgrader(upgrader));
+		this.autoRun(this.upgraders, upgrader => this.handleUpgrader(upgrader),
+					 upgrader => upgrader.avoidDanger());
 	}
 }

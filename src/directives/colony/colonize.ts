@@ -1,8 +1,10 @@
 import {Colony} from '../../Colony';
 import {log} from '../../console/log';
 import {Roles} from '../../creepSetups/setups';
+import {RoomIntel} from '../../intel/RoomIntel';
 import {ClaimingOverlord} from '../../overlords/colonization/claimer';
 import {PioneerOverlord} from '../../overlords/colonization/pioneer';
+import {StationaryScoutOverlord} from '../../overlords/scouting/stationary';
 import {profile} from '../../profiler/decorator';
 import {Cartographer, ROOMTYPE_CONTROLLER} from '../../utilities/Cartographer';
 import {printRoomName} from '../../utilities/utils';
@@ -23,10 +25,6 @@ export class DirectiveColonize extends Directive {
 	static requiredRCL = 3;
 
 	toColonize: Colony | undefined;
-	overlords: {
-		claim: ClaimingOverlord;
-		pioneer: PioneerOverlord;
-	};
 
 	constructor(flag: Flag) {
 		flag.memory.allowPortals = true;
@@ -46,10 +44,15 @@ export class DirectiveColonize extends Directive {
 	spawnMoarOverlords() {
 		this.overlords.claim = new ClaimingOverlord(this);
 		this.overlords.pioneer = new PioneerOverlord(this);
+		let sf = RoomIntel.getSafetyData(this.pos.roomName);
+		if (sf.threatLevel > .1) {
+			this.overlords.scout = new StationaryScoutOverlord(this);
+		}
 	}
 
 	init() {
-		this.alert(`Colonization in progress`);
+		const mixin = this.toColonize ? " (host: ${this.toColonize.roomName})" : ""
+		this.alert(`Colonization in progress${mixin}`);
 	}
 
 	run(verbose = false) {
@@ -57,17 +60,13 @@ export class DirectiveColonize extends Directive {
 		if (this.toColonize && this.toColonize.spawns.length > 0) {
 			// Reassign all pioneers to be miners and workers
 			const miningOverlords = _.map(this.toColonize.miningSites, site => site.overlords.mine);
-			for (const pioneer of this.overlords.pioneer.pioneers) {
+			for (const pioneer of (<PioneerOverlord>this.overlords.pioneer).pioneers) {
 				const miningOverlord = miningOverlords.shift();
 				if (miningOverlord) {
-					if (verbose) {
-						log.debug(`Reassigning: ${pioneer.print} to mine: ${miningOverlord.print}`);
-					}
+					log.info(`Reassigning: ${pioneer.print} to mine: ${miningOverlord.print}`);
 					pioneer.reassign(miningOverlord, Roles.drone);
 				} else {
-					if (verbose) {
-						log.debug(`Reassigning: ${pioneer.print} to work: ${this.toColonize.overlords.work.print}`);
-					}
+					log.info(`Reassigning: ${pioneer.print} to work: ${this.toColonize.overlords.work.print}`);
 					pioneer.reassign(this.toColonize.overlords.work, Roles.worker);
 				}
 			}

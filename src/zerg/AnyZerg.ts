@@ -379,7 +379,7 @@ export abstract class AnyZerg {
 	 */
 	flee(avoidGoals: (RoomPosition | HasPos)[] = this.room.fleeDefaults,
 		 fleeOptions: FleeOptions              = {},
-		 moveOptions: MoveOptions              = {}): boolean {
+		 moveOptions: MoveOptions              = {pathOpts: {avoidSK: false}}): boolean {
 		if (avoidGoals.length == 0 || this.room.dangerousHostiles.find(
 			creep => creep.pos.getRangeToXY(this.pos.x, this.pos.y) < 6) == undefined) {
 			return false;
@@ -413,9 +413,9 @@ export abstract class AnyZerg {
 		if ((this.ticksToLive || 0) < 50) {
 			return false; // I just wanna die!!
 		}
-
+		
 		_.defaults(opts, {timer: 10, dropEnergy: true});
-
+		
 		// If you previously determined you are in danger, wait for timer to expire
 		if (this.memory.avoidDanger) {
 			if (this.memory.avoidDanger.timer > 0) {
@@ -424,6 +424,9 @@ export abstract class AnyZerg {
 					this.drop(RESOURCE_ENERGY); // transfer energy to container check is only run on first danger tick
 				}
 				this.memory.avoidDanger.timer--;
+				if (this.flee(undefined, opts)) {
+					return true;
+				}
 				return true;
 			} else {
 				delete this.memory.avoidDanger;
@@ -464,7 +467,7 @@ export abstract class AnyZerg {
 				});
 				if (!closestColony) {
 					log.error(`${this.print} is all alone in a dangerous place and can't find their way home!`);
-					return false;
+					return this.flee(undefined, opts);
 				}
 				fallback = closestColony.name;
 			}

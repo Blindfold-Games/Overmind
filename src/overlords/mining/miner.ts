@@ -1,7 +1,8 @@
 import {$} from '../../caching/GlobalCache';
 import {ColonyStage} from '../../Colony';
 import {log} from '../../console/log';
-import {bodyCost, CreepSetup} from '../../creepSetups/CreepSetup';
+import {bodyCost} from '../../creepSetups/CreepSetup';
+import {CombatCreepSetup} from '../../creepSetups/CombatCreepSetup';
 import {Roles, Setups} from '../../creepSetups/setups';
 import {DirectiveOutpost} from '../../directives/colony/outpost';
 import {DirectiveHarvest} from '../../directives/resource/harvest';
@@ -13,10 +14,7 @@ import {maxBy, minBy} from '../../utilities/utils';
 import {Zerg} from '../../zerg/Zerg';
 import {Overlord, OverlordMemory} from '../Overlord';
 
-export const StandardMinerSetupCost = bodyCost(Setups.drones.miners.standard.generateBody(Infinity));
-
-export const DoubleMinerSetupCost = bodyCost(Setups.drones.miners.double.generateBody(Infinity));
-
+export const StandardMinerSetupCost = bodyCost(Setups.drones.miners.standard.generateMaxedBody().body);
 
 const BUILD_OUTPUT_FREQUENCY = 15;
 const SUICIDE_CHECK_FREQUENCY = 3;
@@ -48,7 +46,7 @@ export class MiningOverlord extends Overlord {
 	energyPerTick: number;
 	miningPowerNeeded: number;
 	mode: 'early' | 'SK' | 'link' | 'standard' | 'double';
-	setup: CreepSetup;
+	setup: CombatCreepSetup;
 	minersNeeded: number;
 	allowDropMining: boolean;
 
@@ -83,7 +81,7 @@ export class MiningOverlord extends Overlord {
 		if (Cartographer.roomType(this.pos.roomName) == ROOMTYPE_SOURCEKEEPER) {
 			this.mode = 'SK';
 			this.setup = Setups.drones.miners.sourceKeeper;
-		} else if (this.colony.room.energyCapacityAvailable < StandardMinerSetupCost) {
+		} else if (this.colony.room.energyCapacityAvailable < StandardMinerSetupCost && !this.colony.state.isIncubating) {
 			this.mode = 'early';
 			this.setup = Setups.drones.miners.default;
 		}
@@ -104,11 +102,16 @@ export class MiningOverlord extends Overlord {
 			this.setup = Setups.drones.miners.standard;
 			// todo: double miner condition
 		}
+
 		const miningPowerEach = this.setup.getBodyPotential(WORK, this.colony);
 		// this.minersNeeded = this.isDisabled ? 0 : Math.min(Math.ceil(this.miningPowerNeeded / miningPowerEach),
 		// 							 this.pos.availableNeighbors(true).length);
 		this.minersNeeded = Math.min(Math.ceil(this.miningPowerNeeded / miningPowerEach),
 									 this.pos.availableNeighbors(true).length);
+		if (this.colony.state.isIncubating) {
+			this.minersNeeded = 1
+			this.setup = Setups.drones.miners.remote
+		}
 		this.minersNeeded = this.isDisabled ? 0 : this.minersNeeded;
 		// Allow drop mining at low levels
 		this.allowDropMining = this.colony.level < MiningOverlord.settings.dropMineUntilRCL;
@@ -273,6 +276,22 @@ export class MiningOverlord extends Overlord {
 		if (!miner.pos.inRangeToPos(this.pos, 1)) {
 			return miner.goTo(this);
 		}
+		
+		// Link mining
+		if (this.link) {
+			const res = miner.harvest(this.source!);
+			if (_.sum(miner.carry) == miner.carryCapacity) {
+				return miner.goTransfer(this.link);
+			}
+			// If for whatever reason there's no reciever link, you can get stuck in a bootstrapping loop, so
+			// occasionally check for this and drop energy on the ground if needed
+			if (Game.time % 10 == 0) {
+				const commandCenterLink = this.colony.commandCenter ? this.colony.commandCenter.link : undefined;
+				if (!commandCenterLink) {
+					miner.drop(RESOURCE_ENERGY);
+				}
+			}
+		} 
 
 		// Container mining
 		if (this.container) {
@@ -341,12 +360,17 @@ export class MiningOverlord extends Overlord {
 
 		// Link mining
 		if (this.link) {
-			const res = miner.harvest(this.source!);
-			if (res == ERR_NOT_IN_RANGE) { // approach mining site
-				if (this.goToMiningSite(miner)) return;
+			// Don't use goToMiningSite() here because miners will push each other around and waste CPU
+			if (!miner.pos.inRangeToPos(this.pos, 1)) {
+				return miner.goTo(this);
 			}
+			const res = miner.harvest(this.source!);
+
 			if (miner.carry.energy > 0.9 * miner.carryCapacity) {
 				miner.transfer(this.link, RESOURCE_ENERGY);
+			}
+			if (res == ERR_NOT_IN_RANGE) { // approach mining site
+				if (this.goToMiningSite(miner)) return;
 			}
 			// If for whatever reason there's no reciever link, you can get stuck in a bootstrapping loop, so
 			// occasionally check for this and drop energy on the ground if needed
@@ -581,12 +605,6 @@ export class MiningOverlord extends Overlord {
 	}
 
 	private handleMiner(miner: Zerg) {
-
-		// Stay safe out there!
-		if (miner.avoidDanger({timer: 10, dropEnergy: true})) {
-			return;
-		}
-
 		// Run the appropriate mining actions
 		switch (this.mode) {
 			case 'early':
@@ -606,9 +624,7 @@ export class MiningOverlord extends Overlord {
 	}
 
 	run() {
-		for (const miner of this.miners) {
-			this.handleMiner(miner);
-		}
+		this.autoRun(this.miners, miner => this.handleMiner(miner), miner => miner.avoidDanger());
 		if (this.room && Game.time % BUILD_OUTPUT_FREQUENCY == 1) {
 			this.addRemoveContainer();
 		}

@@ -17,6 +17,7 @@ import set = Reflect.set;
 
 export const EXPANSION_EVALUATION_FREQ = 500;
 export const MIN_EXPANSION_DISTANCE = 2;
+export const MAX_EXPANSION_DISTANCE = 8;
 
 export interface ColonyExpansionData {
 	possibleExpansions: { [roomName: string]: number | boolean };
@@ -32,16 +33,17 @@ export class ExpansionEvaluator {
 		// This method is typed a little strangely to avoid some circular dependency problems
 
 		// This only gets run once per colony
+		const colStatus = RoomIntel.getRoomStatus(colonyRoomName).status
 		if (_.keys(expansionData.possibleExpansions).length == 0 || Game.time > expansionData.expiration) {
 			// Generate a list of rooms which can possibly be settled in
-			const nearbyRooms = Cartographer.recursiveRoomSearch(colonyRoomName, 5);
+			const nearbyRooms = Cartographer.recursiveRoomSearch(colonyRoomName, MAX_EXPANSION_DISTANCE);
 			let possibleExpansions: string[] = [];
 			for (const depth in nearbyRooms) {
 				if (parseInt(depth, 10) <= MIN_EXPANSION_DISTANCE) continue;
 				possibleExpansions = possibleExpansions.concat(nearbyRooms[depth]);
 			}
 			for (const roomName of possibleExpansions) {
-				if (Cartographer.roomType(roomName) == ROOMTYPE_CONTROLLER) {
+				if (Cartographer.roomType(roomName) == ROOMTYPE_CONTROLLER && RoomIntel.getRoomStatus(roomName).status == colStatus) {
 					expansionData.possibleExpansions[roomName] = true;
 				}
 			}
@@ -110,8 +112,8 @@ export class ExpansionEvaluator {
 			const setup = roomType == ROOMTYPE_CONTROLLER ? Setups.drones.miners.standard.generateMaxedBody()
 				: Setups.drones.miners.sourceKeeper.generateMaxedBody();
 			const effectiveCreepUptime = (CREEP_LIFE_TIME - sourcePathLengths[source.pos.print]);
-			creepEnergyCost += bodyCost(setup)/effectiveCreepUptime;
-			spawnTimeCost += setup.length*CREEP_SPAWN_TIME/effectiveCreepUptime;
+			creepEnergyCost += bodyCost(setup.body)/effectiveCreepUptime;
+			spawnTimeCost += setup.body.length*CREEP_SPAWN_TIME/effectiveCreepUptime;
 			// Always harvesting, sometimes replacement is moving
 			cpuCost += 0.2 + 0.2*(1-effectiveCreepUptime/CREEP_LIFE_TIME);
 		}

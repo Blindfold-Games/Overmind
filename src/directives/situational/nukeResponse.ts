@@ -2,13 +2,14 @@ import {Colony} from '../../Colony';
 import {log} from '../../console/log';
 import {profile} from '../../profiler/decorator';
 import {Directive} from '../Directive';
+import {DefenseDirective} from '../defense/_DefenseDirective';
 import {NotifierPriority} from '../Notifier';
 
 /**
  * Nuke response: automatically over-fortify ramparts to withstand an incoming nuclear strike
  */
 @profile
-export class DirectiveNukeResponse extends Directive {
+export class DirectiveNukeResponse extends DefenseDirective {
 
 	static directiveName = 'nukeResponse';
 	static color = COLOR_ORANGE;

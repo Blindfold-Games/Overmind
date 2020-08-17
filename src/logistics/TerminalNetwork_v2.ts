@@ -124,7 +124,7 @@ const THRESHOLDS_DONT_CARE: Thresholds = { // thresholds for stuff you don't nee
 };
 const THRESHOLDS_POWER: Thresholds = { // low target ensures power gets spread among room (cheaper than shipping energy)
 	target   : 2500, // should be equal to tolerance
-	surplus  : undefined,
+	surplus  : 50000,
 	tolerance: 2500, // should be equal to target to prevent active buying
 };
 const THRESHOLDS_OPS: Thresholds = { // might need to come back to this when I actually do power creeps
@@ -470,7 +470,7 @@ export class TerminalNetworkV2 implements ITerminalNetwork {
 			const avgEnergy = _.sum(nonExceptionalColonies, colony => colony.assets.energy) /
 							  nonExceptionalColonies.length;
 			this._energyThresholds = {
-				target   : avgEnergy,
+				target   : Math.max(avgEnergy, 50000),
 				surplus  : ENERGY_SURPLUS,
 				tolerance: avgEnergy / 5,
 			};
@@ -491,6 +491,10 @@ export class TerminalNetworkV2 implements ITerminalNetwork {
 				&& this.getRemainingSpace(colony) < TerminalNetworkV2.settings.minColonySpace)) {
 			return TN_STATE.activeProvider;
 		}
+		if (resource == RESOURCE_POWER && !colony.powerSpawn) {
+			return TN_STATE.activeProvider;
+		}
+		
 		// Passive provider if the room has below surplus but above target+tolerance
 		if ((surplus != undefined ? surplus : Infinity) >= amount && amount > target + tolerance) {
 			return TN_STATE.passiveProvider;
@@ -878,7 +882,7 @@ export class TerminalNetworkV2 implements ITerminalNetwork {
 					return false;
 				}
 			}
-			if (opts.requestType == 'passive' && !Abathur.isBaseMineral(resource)) {
+			if (opts.requestType == 'passive' && (!Abathur.isBaseMineral(resource) && resource != RESOURCE_ENERGY)) {
 				return false; // can only buy base minerals for passive requests
 			}
 			// If you can still buy the thing, then buy then thing!

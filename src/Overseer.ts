@@ -314,7 +314,7 @@ export class Overseer implements IOverseer {
 		// Place nuke response directive if there is a nuke present in colony room
 		if (colony.room && colony.level >= DirectiveNukeResponse.requiredRCL) {
 			for (const nuke of colony.room.find(FIND_NUKES)) {
-				DirectiveNukeResponse.createIfNotPresent(nuke.pos, 'pos');
+				DirectiveNukeResponse.createIfNotPresent(colony.controller.pos, 'room');
 			}
 		}
 	}
@@ -378,7 +378,7 @@ export class Overseer implements IOverseer {
 			}
 			const neighboringRooms = _.values(Game.map.describeExits(roomName)) as string[];
 			const isReachableFromColony = _.any(neighboringRooms, r => colony.roomNames.includes(r));
-			return isReachableFromColony && Game.map.getRoomStatus(roomName).status == 'normal';
+			return isReachableFromColony && RoomIntel.getRoomStatus(roomName).status == RoomIntel.getRoomStatus(colony.room.name).status;
 		});
 	}
 
@@ -530,7 +530,7 @@ export class Overseer implements IOverseer {
 											  colony.terminal]) as Structure[];
 		for (const structure of criticalStructures) {
 			if (structure.hits < structure.hitsMax &&
-				structure.pos.findInRange(colony.room.dangerousPlayerHostiles, 2).length > 0) {
+				structure.pos.findInRange(colony.room.dangerousPlayerHostiles, 3).length > 0) {
 				const ret = colony.controller.activateSafeMode();
 				if (ret != OK && !colony.controller.safeMode) {
 					if (colony.terminal) {

@@ -2,6 +2,7 @@ import {CombatIntel} from '../../intel/CombatIntel';
 import {BunkerDefenseOverlord} from '../../overlords/defense/bunkerDefense';
 import {DistractionOverlord} from '../../overlords/defense/distraction';
 import {RangedDefenseOverlord} from '../../overlords/defense/rangedDefense';
+import {BunkerRangedDefenseOverlord} from '../../overlords/defense/bunkerRangedDefense';
 import {profile} from '../../profiler/decorator';
 import {BarrierPlanner} from '../../roomPlanner/BarrierPlanner';
 import {Directive} from '../Directive';
@@ -52,8 +53,11 @@ export class DirectiveInvasionDefense extends Directive {
 
 		// If serious bunker busting attempt, spawn lurkers
 		// TODO understand dismantlers damage output
-		if (meleeHostiles.length > 0 && expectedDamage > ATTACK_POWER * 70 &&
+		
+		if (expectedDamage > ATTACK_POWER * 40 &&
+			this.colony.spawns.length > 0 &&
 			(this.colony.level >= BarrierPlanner.settings.bunkerizeRCL || rangedHostiles.length > 3)) {
+			this.overlords.bunkerRangedDefense = new BunkerRangedDefenseOverlord(this);
 			this.overlords.bunkerDefense = new BunkerDefenseOverlord(this);
 		}
 		// If melee attackers, try distractions

@@ -12,9 +12,9 @@ import {log} from '../../console/log';
  * Spawns ranged defenders to defend against incoming player invasions in an owned room
  */
 @profile
-export class RangedDefenseOverlord extends CombatOverlord {
+export class BunkerRangedDefenseOverlord extends CombatOverlord {
 
-	hydralisks: CombatZerg[];
+	zealots: CombatZerg[];
 
 	room: Room;
 	directive: DirectiveInvasionDefense;
@@ -24,19 +24,24 @@ export class RangedDefenseOverlord extends CombatOverlord {
 		reengageHitsPercent: 0.95,
 	};
 
-	constructor(directive: DirectiveInvasionDefense,
-				priority = OverlordPriority.defense.rangedDefense) {
-		super(directive, 'rangedDefense', priority, 1);
-		this.hydralisks = this.combatZerg(Roles.ranged);
+	constructor(directive: DirectiveInvasionDefense, priority = OverlordPriority.defense.bunkerRangedDefense) {
+		// Only spawn inside room
+		super(directive, 'bunkerRangedDefense', priority, 1, 30);
+		this.zealots = this.combatZerg(Roles.bunkerRanged);
 	}
 
-	private handleDefender(hydralisk: CombatZerg): void {
-		if (this.room.hostiles.length > 0) {
-			hydralisk.autoCombat(this.room.name);
-		} else {
-			if (!hydralisk.doMedicActions(this.room.name) && hydralisk.pos.getRangeTo(this.directive.pos) > 4) {
-				hydralisk.goTo(this.directive.pos);
+
+	private handleDefender(zealot: CombatZerg): void {
+		if (!zealot.inRampart) {
+			const nearbyRampart = _.find(zealot.room.walkableRamparts, rampart => rampart.pos.getRangeTo(zealot) < 5);
+			if (nearbyRampart) {
+				zealot.goTo(nearbyRampart);
 			}
+		}
+		if (zealot.room.hostiles.length > 0) {
+			zealot.autoBunkerCombat(zealot.room.name);
+		} else {
+			// go out of way in bunker
 		}
 	}
 
@@ -48,28 +53,17 @@ export class RangedDefenseOverlord extends CombatOverlord {
 		const towerDamage = this.room.hostiles[0] ? CombatIntel.towerDamageAtPos(this.room.hostiles[0].pos) || 0 : 0;
 		const worstDamageMultiplier = _.min(_.map(this.room.hostiles,
 												  creep => CombatIntel.minimumDamageTakenMultiplier(creep)));
-		const hydraliskDamage = RANGED_ATTACK_POWER * CombatIntel.getMyCombatPotentials(this.hydralisks).ranged;
-		const maxDamageReceived = worstDamageMultiplier * (hydraliskDamage + towerDamage + 1);
+		const zealotDamage = RANGED_ATTACK_POWER * CombatIntel.getMyCombatPotentials(this.zealots).ranged;
+		const maxDamageReceived = worstDamageMultiplier * (zealotDamage + towerDamage + 1);
 		const needAdditionalDamage = Math.max(healAmount - maxDamageReceived, 0);
 		const neededRangedParts = needAdditionalDamage / RANGED_ATTACK_POWER;
 		return neededRangedParts;
 	}
 
 	init() {
-		if (this.reassignIdleCreeps(Roles.ranged, 1)) return;
+		if (this.reassignIdleCreeps(Roles.bunkerRanged, 1)) return;
 
-		let setup = CombatSetups.hydralisks.default;
-		if (_.all(this.spawnGroup.colonies, col => col.room.energyCapacityAvailable < 800)) {
-			setup = CombatSetups.hydralisks.noHeal; // can't spawn default hydras at very low rcl
-		} else {
-			const {attack, ranged, heal} = CombatIntel.getCombatPotentials(this.room.hostiles);
-			// if there's a lot of big baddies or this assault has lasted a long time, pull out the boosts
-			const threatv = attack + ranged + heal
-			if (threatv > 100 || this.age > 1000) {
-				//log.info(`[this.] armor up: combat rating ${threatv} age ${this.age}`)
-				setup = CombatSetups.hydralisks.boosted.armored;
-			}
-		}
+		const setup = CombatSetups.zealot.default;
 
 		const neededAdditionalRangedPotential = this.computeNeededAdditionalRangedPotential();
 		if (neededAdditionalRangedPotential) {
@@ -78,6 +72,6 @@ export class RangedDefenseOverlord extends CombatOverlord {
 	}
 
 	run() {
-		this.autoRun(this.hydralisks, hydralisk => this.handleDefender(hydralisk));
+		this.autoRun(this.zealots, zealot => this.handleDefender(zealot));
 	}
 }

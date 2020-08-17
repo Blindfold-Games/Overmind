@@ -5,6 +5,7 @@ import {Pathing} from '../../movement/Pathing';
 import {OverlordPriority} from '../../priorities/priorities_overlords';
 import {profile} from '../../profiler/decorator';
 import {Tasks} from '../../tasks/Tasks';
+import {RoomIntel} from '../../intel/RoomIntel'
 import {Zerg} from '../../zerg/Zerg';
 import {Overlord} from '../Overlord';
 
@@ -33,6 +34,10 @@ export class PioneerOverlord extends Overlord {
 	}
 
 	init() {
+		// try disabling burning energy on pioneers if the room is a battleground.
+		if (RoomIntel.getSafetyData(this.pos.roomName).threatLevel > .3) {
+			return
+		}
 		this.wishlist(4, Setups.pioneer);
 	}
 
@@ -79,7 +84,7 @@ export class PioneerOverlord extends Overlord {
 	}
 
 	run() {
-		this.autoRun(this.pioneers, pioneer => this.handlePioneer(pioneer));
+		this.autoRun(this.pioneers, pioneer => this.handlePioneer(pioneer), pioneer => pioneer.flee());
 	}
 }
 

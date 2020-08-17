@@ -84,7 +84,13 @@ export class QueenOverlord extends Overlord {
 		} else {
 			if (this.hatchery.battery && queen.carry.energy < queen.carryCapacity) {
 				queen.task = Tasks.withdraw(this.hatchery.battery);
+				return;
 			}
+		}
+		if (this.queens.length > 1) {
+			queen.goTo(this.hatchery.idlePos, {range: 1});
+		} else {
+			queen.goTo(this.hatchery.idlePos);
 		}
 	}
 
@@ -113,19 +119,6 @@ export class QueenOverlord extends Overlord {
 	}
 
 	run() {
-		for (const queen of this.queens) {
-			// Get a task
-			this.handleQueen(queen);
-			// Run the task if you have one; else move back to idle pos
-			if (queen.hasValidTask) {
-				queen.run();
-			} else {
-				if (this.queens.length > 1) {
-					queen.goTo(this.hatchery.idlePos, {range: 1});
-				} else {
-					queen.goTo(this.hatchery.idlePos);
-				}
-			}
-		}
+		this.autoRun(this.queens, queen => this.handleQueen(queen));
 	}
 }

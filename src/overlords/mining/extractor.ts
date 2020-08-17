@@ -111,10 +111,7 @@ export class ExtractorOverlord extends Overlord {
 	}
 
 	private handleDrone(drone: Zerg) {
-		// Stay safe out there!
-		if (drone.avoidDanger({timer: 10, dropEnergy: true})) {
-			return;
-		}
+
 		// Ensure you are in the assigned room
 		if (drone.room == this.room && !drone.pos.isEdge) {
 			if (this.mineral && !drone.pos.inRangeToPos(this.mineral.pos, 1)) {
@@ -148,7 +145,7 @@ export class ExtractorOverlord extends Overlord {
 	}
 
 	run() {
-		_.forEach(this.drones, drone => this.handleDrone(drone));
+		this.autoRun(this.drones, drone => this.handleDrone(drone), drone => drone.avoidDanger());
 		if (this.room && Game.time % BUILD_OUTPUT_FREQUENCY == 2) {
 			this.buildOutputIfNeeded();
 		}

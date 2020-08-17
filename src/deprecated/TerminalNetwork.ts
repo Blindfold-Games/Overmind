@@ -252,9 +252,10 @@ export class TerminalNetwork /*implements ITerminalNetwork*/ {
 		const terminalNearCapacity = terminal.store.getUsedCapacity() > 0.95 * terminal.store.getCapacity();
 
 		for (const resource in terminal.store) {
+			/*
 			if (resource == RESOURCE_POWER) {
 				continue;
-			}
+			}*/
 			if (resource == RESOURCE_ENERGY) {
 
 				let energyThreshold = Energetics.settings.terminal.energy.outThreshold;

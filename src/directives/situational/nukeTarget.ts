@@ -20,6 +20,7 @@ export class DirectiveNukeTarget extends Directive {
 	// TODO add sending multiple nukes and spacing the nukes out by x amount
 
 	constructor(flag: Flag) {
+		flag.memory.pathNotRequired = true;
 		super(flag, (colony) => !!colony.nuker && !(colony.nuker.cooldown > 0)
 								&& Game.map.getRoomLinearDistance(colony.room.name, flag.pos.roomName) <= 10);
 		this.refresh();

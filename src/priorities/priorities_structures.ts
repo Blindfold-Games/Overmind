@@ -20,6 +20,27 @@ export const BuildPriorities: BuildableStructureConstant[] = [
 ];
 
 /**
+ * Prioritized list of what order structures should be built in
+ */
+export const BuildIncubatingPriorities: BuildableStructureConstant[] = [
+	STRUCTURE_SPAWN,
+	STRUCTURE_TOWER,
+	STRUCTURE_CONTAINER,
+	STRUCTURE_STORAGE,
+	STRUCTURE_RAMPART,
+	STRUCTURE_ROAD,
+	STRUCTURE_EXTENSION,
+	STRUCTURE_TERMINAL,
+	STRUCTURE_LINK,
+	STRUCTURE_EXTRACTOR,
+	STRUCTURE_LAB,
+	STRUCTURE_NUKER,
+	STRUCTURE_OBSERVER,
+	STRUCTURE_POWER_SPAWN,
+	STRUCTURE_WALL,
+];
+
+/**
  * Prioritized list of what order structures should be fortified in case of nuclear strike
  */
 export const FortifyPriorities: BuildableStructureConstant[] = [

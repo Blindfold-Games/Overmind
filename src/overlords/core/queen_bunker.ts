@@ -328,7 +328,7 @@ export class BunkerQueenOverlord extends Overlord {
 		// Otherwise do idle actions
 		if (queen.isIdle) {
 			// this.idleActions(queen);
-			delete queen.memory._go;
+			//delete queen.memory._go;
 		}
 	}
 

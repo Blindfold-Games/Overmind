@@ -27,7 +27,7 @@ export class TaskRecharge extends Task {
 	}
 
 	private rechargeRateForCreep(creep: Zerg, obj: rechargeObjectType): number | false {
-		if (creep.colony && creep.colony.hatchery && creep.colony.hatchery.battery
+		if (creep.colony && creep.colony.hatchery && !creep.colony.state.isIncubating && creep.colony.hatchery.battery
 			&& obj.id == creep.colony.hatchery.battery.id && creep.roleName != 'queen') {
 			return false; // only queens can use the hatchery battery
 		}

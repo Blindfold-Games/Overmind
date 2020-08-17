@@ -91,6 +91,7 @@ export class ExpansionPlanner implements IExpansionPlanner {
 		const allOwnedMinerals = _.map(getAllColonies(), col => col.room.mineral!.mineralType) as MineralConstant[];
 		let bestRoom: string = '';
 		let bestScore: number = -Infinity;
+		const colStatus = Game.map.getRoomStatus(colony.room.name).status
 		for (const roomName in colony.memory.expansionData.possibleExpansions) {
 			let score = colony.memory.expansionData.possibleExpansions[roomName] as number | boolean;
 			if (typeof score != 'number') continue;
@@ -123,7 +124,7 @@ export class ExpansionPlanner implements IExpansionPlanner {
 					}
 				}
 				// Update best choices
-				if (score > bestScore && Game.map.getRoomStatus(roomName).status == 'normal') {
+				if (score > bestScore && Game.map.getRoomStatus(roomName).status == colStatus) {
 					bestScore = score;
 					bestRoom = roomName;
 				}

@@ -198,6 +198,6 @@ export class TransportOverlord extends Overlord {
 	}
 
 	run() {
-		this.autoRun(this.transporters, transporter => this.handleSmolTransporter(transporter));
+		this.autoRun(this.transporters, transporter => this.handleSmolTransporter(transporter), transporter => transporter.avoidDanger());
 	}
 }

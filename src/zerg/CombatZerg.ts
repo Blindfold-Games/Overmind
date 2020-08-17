@@ -183,7 +183,7 @@ export class CombatZerg extends Zerg {
 		const nearbyHostiles = _.filter(this.room.dangerousHostiles, c => this.pos.inRangeToXY(c.pos.x, c.pos.y, 2));
 		if (nearbyHostiles.length && !this.inRampart) {
 			// this.say('run!');
-			this.rangedMassAttack();
+			//this.rangedMassAttack();
 			return this.kite(nearbyHostiles);
 		}
 	}

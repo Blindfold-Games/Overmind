@@ -107,7 +107,10 @@ export abstract class Directive {
 	}
 
 	get print(): string {
-		return '<a href="#!/room/' + Game.shard.name + '/' + this.pos.roomName + '">[' + this.name + ']</a>';
+		if (this.pos && this.pos.roomName) {
+			return '<a href="#!/room/' + Game.shard.name + '/' + this.pos.roomName + '">[' + this.name + ']</a>';
+		}
+		return '[' + this.name + ']';
 	}
 
 	debug(...args: any[]) {
@@ -275,11 +278,17 @@ export abstract class Directive {
 			let nearestColony: Colony | undefined;
 			let minDistance = Infinity;
 			for (const colony of getAllColonies()) {
-				if (Game.map.getRoomLinearDistance(this.pos.roomName, colony.name) > maxLinearRange
+				let lend = Game.map.getRoomLinearDistance(this.pos.roomName, colony.name)
+				if (lend > maxLinearRange
 					&& !this.memory.allowPortals) {
 					continue;
 				}
 				if (!colonyFilter || colonyFilter(colony)) {
+					if (this.memory.pathNotRequired && lend < minDistance) {
+						nearestColony = colony;
+						minDistance = lend;
+						continue;
+					}
 					const ret = Pathing.findPath((colony.hatchery || colony).pos, this.pos,
 												 {maxOps: DIRECTIVE_PATH_TIMEOUT});
 					// TODO handle directives that can't find a path at great range

@@ -330,6 +330,7 @@ export class Movement {
 				log.debug(`Movement: incomplete path for ${creep.print}! ` +
 						  `(${creep.pos.print} ${rightArrow} ${destination.print})`);
 				color = 'red';
+				creep.debug(new Error().stack)
 			}
 			this.circle(creep.pos, color);
 			moveData.path = Pathing.serializePath(creep.pos, ret.path, color);
@@ -463,7 +464,7 @@ export class Movement {
 			if (isPowerZerg(creep)) {
 				return MovePriorities.powerCreep;
 			} else {
-				return MovePriorities[creep.memory.role] || MovePriorities.default;
+				return (creep.memory.role in MovePriorities) ? MovePriorities[creep.memory.role] : MovePriorities.default;
 			}
 		}
 	}
@@ -1203,6 +1204,7 @@ export class Movement {
 		}
 		if (creep.room.name == dest.roomName) {
 			_.defaults(opts.pathOpts!, {
+				avoidSK: false,
 				maxRooms          : 1,
 				modifyRoomCallback: Movement.invasionMoveCallbackModifier,
 			});
@@ -1386,4 +1388,3 @@ export class Movement {
 // Creep.prototype.goTo = function (destination: RoomPosition | HasPos, options?: MoveOptions) {
 // 	return Movement.goTo(this, destination, options);
 // };
-

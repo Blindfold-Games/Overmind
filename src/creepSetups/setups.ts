@@ -4,7 +4,9 @@ import {
 	RavagerSetup,
 	RemoteUpgraderSetup,
 	TransfuserSetup,
-	ZerglingSetup
+	ZerglingSetup,
+	MinerSetup,
+	ZealotSetup
 } from './CombatCreepSetup';
 import {CreepSetup} from './CreepSetup';
 
@@ -32,6 +34,7 @@ export const Roles = {
 	healer          : 'transfuser',
 	dismantler      : 'lurker',
 	bunkerDefender  : 'ravager',
+	bunkerRanged    : 'zealot',
 	drill           : 'drill',
 	coolant         : 'coolant',
 	roomPoisoner    : 'poisoner',
@@ -52,6 +55,16 @@ export const Setups = {
 
 		miners: {
 
+			default: new MinerSetup(),
+			standard: new MinerSetup(),
+			standardCPU: new MinerSetup({bodyOpts:{maxParts:{work: 8}}}),
+			linkOptimized: new MinerSetup({moveSpeed: .3, bodyOpts:{maxParts:{work: 12}}}),
+			emergency: new MinerSetup({bodyOpts:{maxParts:{work: 2}}}),
+			double: new MinerSetup({bodyOpts:{maxParts:{work: 12}}}),
+			sourceKeeper: new MinerSetup({bodyOpts:{maxParts:{work: 10}}, moveSpeed: 1, boosted: true}),
+			remote: new MinerSetup({moveSpeed: 1, boosted: true}),
+		
+			/*
 			default: new CreepSetup(Roles.drone, {
 				pattern  : [WORK, WORK, CARRY, MOVE],
 				sizeLimit: 3,
@@ -86,6 +99,7 @@ export const Setups = {
 				pattern  : [WORK, WORK, CARRY, MOVE],
 				sizeLimit: 5,
 			})
+			*/
 		}
 	},
 
@@ -121,7 +135,7 @@ export const Setups = {
 	pioneer: new CreepSetup(Roles.pioneer, {
 		pattern  : [WORK, CARRY, MOVE, MOVE],
 		sizeLimit: Infinity,
-	}),
+	}, ["construct"]),
 
 
 	managers: {
@@ -207,7 +221,7 @@ export const Setups = {
 		default: new CreepSetup(Roles.upgrader, {
 			pattern  : [WORK, WORK, WORK, CARRY, MOVE],
 			sizeLimit: Infinity,
-		}),
+		}, ["upgrade"]),
 
 		rcl8: new CreepSetup(Roles.upgrader, {
 			pattern  : [WORK, WORK, WORK, CARRY, MOVE],
@@ -308,6 +322,9 @@ export const CombatSetups = {
 
 	},
 
+	zealot: {
+		default: new ZealotSetup({moveSpeed: 0.3, boosted: true, healing: false}),
+	},
 	/**
 	 * Hydralisks are ranged creeps which may have a small amount of healing
 	 */

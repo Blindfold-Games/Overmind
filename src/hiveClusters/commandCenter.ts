@@ -148,7 +148,7 @@ export class CommandCenter extends HiveCluster {
 		// Refill power spawn
 		if (this.powerSpawn) {
 			if (this.powerSpawn.energy < this.powerSpawn.energyCapacity * .5) {
-				this.transportRequests.requestInput(this.powerSpawn, Priority.NormalLow);
+				this.transportRequests.requestInput(this.powerSpawn, Priority.Low);
 			} else if (this.powerSpawn.power < this.powerSpawn.powerCapacity * .5 && this.terminal
 					   && this.terminal.store.power && this.terminal.store.power >= 100) {
 				this.transportRequests.requestInput(this.powerSpawn, Priority.NormalLow, {resourceType: RESOURCE_POWER});
@@ -156,13 +156,15 @@ export class CommandCenter extends HiveCluster {
 		}
 		// Refill nuker with low priority
 		if (this.nuker) {
-			if (this.nuker.energy < this.nuker.energyCapacity && (this.storage.energy > 200000 && this.nuker.cooldown
-																  <= 1000 || this.storage.energy > 800000)) {
-				this.transportRequests.requestInput(this.nuker, Priority.Low);
+			if (this.nuker.energy < this.nuker.energyCapacity && (
+					(this.storage.energy > 200000 || this.colony.state.isBeingNuked)
+					&& this.nuker.cooldown <= 500 || this.storage.energy > 800000)) {
+				this.transportRequests.requestInput(this.nuker, Priority.NormalLow);
 			}
 			if (this.nuker.ghodium < this.nuker.ghodiumCapacity
-				&& this.colony.assets[RESOURCE_GHODIUM] >= LAB_MINERAL_CAPACITY) {
-				this.transportRequests.requestInput(this.nuker, Priority.Low, {resourceType: RESOURCE_GHODIUM});
+				&& this.colony.assets[RESOURCE_GHODIUM] >= LAB_MINERAL_CAPACITY
+				&& (this.nuker.energy / this.nuker.energyCapacity) > .9) {
+				this.transportRequests.requestInput(this.nuker, Priority.NormalLow, {resourceType: RESOURCE_GHODIUM});
 			}
 		}
 
@@ -201,8 +203,9 @@ export class CommandCenter extends HiveCluster {
 	}
 
 	private runPowerSpawn() {
-		if (this.powerSpawn && this.storage && this.colony.assets.energy > 300000 &&
-			this.powerSpawn.store.energy >= 50 && this.powerSpawn.store.power > 0) {
+		if (this.powerSpawn && this.storage
+		&& this.colony.assets.energy > 200000
+		&& this.powerSpawn.store.energy >= 50 && this.powerSpawn.store.power > 0) {
 			if (Game.market.credits < TraderJoe.settings.market.credits.canBuyAbove) {
 				// We need to get enough credits that we can start to buy things. Since mineral prices have plunged
 				// recently, often the only way to do this without net losing credits (after factoring in the

@@ -13,7 +13,8 @@ export let OverlordPriority = {
 
 	defense: {					// Defense of local and remote rooms
 		meleeDefense : 200,
-		rangedDefense: 201,
+		bunkerRangedDefense : 201,
+		rangedDefense: 202,
 	},
 
 	warSpawnCutoff: 299, 		// Everything past this is non-critical and won't be spawned in case of emergency
@@ -23,12 +24,6 @@ export let OverlordPriority = {
 		healPoint       : 301,
 		siege           : 302,
 		controllerAttack: 399,
-	},
-
-	colonization: { 			// Colonizing new rooms
-		claim  : 400,
-		pioneer: 401,
-		remoteUpgrading: 410,
 	},
 
 	priorityOwnedRoom: {		// Situationally prioritized in-room operations
@@ -74,6 +69,12 @@ export let OverlordPriority = {
 		reserve      : 900,
 		mine         : 901,
 		roomIncrement: 5, 			// remote room priorities are incremented by this for each outpost
+	},
+	
+	colonization: { 			// Colonizing new rooms
+		claim  : 950,
+		pioneer: 951,
+		remoteUpgrading: 960,
 	},
 
 	remoteSKRoom: {

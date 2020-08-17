@@ -49,20 +49,14 @@ export class BootstrappingOverlord extends Overlord {
 		}
 
 		// If you have no miners then create whatever is the biggest miner you can make
-		const pattern = [WORK, WORK, CARRY, MOVE];
+		let setup = Setups.drones.miners.default
 		const miningOverlordsInRoom = _.map(miningSitesInRoom, site => site.overlords.mine);
 		const allMiners = _.flatten(_.map(miningOverlordsInRoom, overlord => overlord.lifetimeFilter(overlord.miners)));
 		const allMiningPower = _.sum(allMiners, creep => creep.getActiveBodyparts(WORK));
 		let sizeLimit: number;
 		if (allMiningPower == 0) {
-			sizeLimit = Math.min(Math.floor(this.colony.room.energyAvailable / bodyCost(pattern)), 3);
-		} else { // Otherwise if you have miners then you can afford to make normal ones
-			sizeLimit = 3;
+			setup = Setups.drones.miners.emergency
 		}
-		const setup = new CreepSetup(Roles.drone, {
-			pattern  : pattern,
-			sizeLimit: sizeLimit,
-		});
 
 		// Create a bootstrapMiners and donate them to the miningSite overlords as needed
 		for (const overlord of miningOverlordsInRoom) {
@@ -78,7 +72,7 @@ export class BootstrappingOverlord extends Overlord {
 						priority: this.priority + 1,
 					};
 					this.colony.hatchery.enqueue(request);
-					this.debug(`Enqueueing bootstrap miner with size ${sizeLimit}`);
+					this.debug(`Enqueueing bootstrap miner`);
 				}
 			}
 		}
@@ -87,7 +81,7 @@ export class BootstrappingOverlord extends Overlord {
 	init() {
 		// If you are super low on energy, spawn one miner, then a filler, then rest of the miners
 		const totalEnergyInRoom = _.sum(this.withdrawStructures, structure => structure.store.energy);
-		const costToMakeNormalMinerAndFiller = patternCost(Setups.drones.miners.emergency) * 3
+		const costToMakeNormalMinerAndFiller = bodyCost(Setups.drones.miners.emergency.generateMinBody().body) * 3
 											   + patternCost(Setups.filler); // costs 1000
 		if (totalEnergyInRoom < costToMakeNormalMinerAndFiller) {
 			if (this.colony.getCreepsByRole(Roles.drone).length == 0) {

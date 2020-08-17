@@ -253,9 +253,9 @@ export class MatrixLib {
 				const chillPositions = _.compact(_.map(keeperLairInfo || [], info => info.chillPos)) as RoomPosition[];
 				const blockPositions: RoomPosition[] = [
 					..._.map(room.sourceKeepers, keeper => keeper.pos),
-					..._.map(room.keeperLairs.filter(lair => (lair.ticksToSpawn || Infinity) < 100), lair => lair.pos),
-					...chillPositions];
-				MatrixLib.blockWithinRange(matrix, blockPositions, 3);
+					..._.map(room.keeperLairs.filter(lair => (lair.ticksToSpawn || Infinity) < 10), lair => lair.pos)];
+				MatrixLib.blockWithinRange(matrix, blockPositions, 5);
+				MatrixLib.softBlockWithinRange(matrix, chillPositions, 5, 5)
 			}
 		}
 
@@ -328,7 +328,7 @@ export class MatrixLib {
 			if (!(skDirective && skDirective.age > 2500)) {
 				const keeperLairInfo = RoomIntel.getKeeperLairInfo(roomName);
 				const chillPositions = _.compact(_.map(keeperLairInfo || [], info => info.chillPos)) as RoomPosition[];
-				MatrixLib.blockWithinRange(matrix, chillPositions, 3);
+				MatrixLib.blockWithinRange(matrix, chillPositions, 5);
 			}
 		}
 
@@ -440,6 +440,29 @@ export class MatrixLib {
 					y = pos.y + dy;
 					if (y < 0 || y > 49) continue;
 					matrix.set(x, y, 0xff);
+				}
+			}
+		}
+		return matrix;
+	}
+	
+		/**
+	 * Blocks all squares within a range (inclusive) of a list of positions, setting their cost to 0xff
+	 */
+	static softBlockWithinRange(matrix: CostMatrix, positions: RoomPosition[], range: number, cost: number): CostMatrix {
+		let x, y: number;
+		let pos: RoomPosition;
+		const terrain = Game.map.getRoomTerrain(positions[0].roomName);
+		for (let i = 0; i < positions.length; i++) {
+			pos = positions[i];
+			for (let dx = -range; dx <= range; dx++) {
+				x = pos.x + dx;
+				if (x < 0 || x > 49) continue;
+				for (let dy = -range; dy <= range; dy++) {
+					y = pos.y + dy;
+					if (y < 0 || y > 49) continue;
+					if (terrain.get(pos.x, pos.y) & TERRAIN_MASK_WALL) continue;
+					matrix.set(pos.x, pos.y, Math.max(cost, matrix.get(pos.x, pos.y)));
 				}
 			}
 		}
