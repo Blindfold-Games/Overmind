@@ -1,6 +1,6 @@
 import {OutpostDefenseOverlord} from '../../overlords/defense/outpostDefense';
 import {profile} from '../../profiler/decorator';
-import {Directive} from '../Directive';
+import {DefenseDirective} from '../defense/_DefenseDirective';
 import {NotifierPriority} from '../Notifier';
 
 interface DirectiveInvasionDefenseMemory extends FlagMemory {
@@ -13,7 +13,7 @@ interface DirectiveInvasionDefenseMemory extends FlagMemory {
  * Defend an outpost against an incoming player invasion
  */
 @profile
-export class DirectiveOutpostDefense extends Directive {
+export class DirectiveOutpostDefense extends DefenseDirective {
 
 	static directiveName = 'outpostDefense';
 	static color = COLOR_BLUE;

@@ -10,7 +10,7 @@ import {ema, getCacheExpiration} from '../utilities/utils';
 import {CombatZerg} from '../zerg/CombatZerg';
 
 export interface Threat {
-	directive: DefenseDirective;
+//	directive: DefenseDirective;
 	potentials: CombatPotentials | undefined;
 	roomName: string;
 	closestColony: string;
@@ -91,6 +91,8 @@ export class CombatPlanner {
 
 	constructor() {
 		_.defaults(this.memory, defaultCombatPlannerMemory);
+		this.directives = [];
+		this.creeps = [];
 	}
 
 	get memory(): CombatPlannerMemory {
@@ -133,25 +135,24 @@ export class CombatPlanner {
 	}
 
 	static getThreat(directive: DefenseDirective): Threat {
-
 		if (directive.room) {
 			return {
-				directive    : directive,
+//				directive    : directive,
 				potentials   : CombatIntel.getCombatPotentials(directive.room.hostiles),
 				roomName     : directive.room.name,
 				closestColony: directive.colony.name,
-				distances    : directive.overlord.spawnGroup.memory.distances,
+				distances    : directive.overlord ? directive.overlord.spawnGroup.memory.distances : {},
 				lastSeen     : {
 					tick: Game.time,
 				}
 			};
 		} else {
 			return {
-				directive    : directive,
+//				directive    : directive,
 				potentials   : undefined,
 				roomName     : directive.pos.roomName,
 				closestColony: directive.colony.name,
-				distances    : directive.overlord.spawnGroup.memory.distances,
+				distances    : directive.overlord ? directive.overlord.spawnGroup.memory.distances : {},
 				lastSeen     : {
 					tick: Game.time,
 				}

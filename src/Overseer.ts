@@ -215,6 +215,9 @@ export class Overseer implements IOverseer {
 			}
 		}
 
+		// Initialize combatPlanner
+		this.try(() => this.combatPlanner.init());
+
 		// Register cleanup requests to logistics network
 		for (const colony of getAllColonies()) {
 			this.registerLogisticsRequests(colony);

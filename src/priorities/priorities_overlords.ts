@@ -50,6 +50,11 @@ export let OverlordPriority = {
 		roomPoisoner: 561,
 	},
 
+	patrolSK: {
+		sourceReaper : 580,
+		roomIncrement: 5,
+	},
+
 	upgrading: {				// Spawning upgraders
 		upgrade        : 600,
 	},

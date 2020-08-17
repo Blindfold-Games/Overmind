@@ -245,7 +245,7 @@ export class MatrixLib {
 		if (opts.avoidSK && Cartographer.roomType(room.name) == ROOMTYPE_SOURCEKEEPER) {
 			// Skip this step if we've been harvesting from the room for a while
 			const skDirective = _.find(Overmind.overseer.getDirectivesInRoom(room.name), dir =>
-				dir.directiveName == 'outpostSK'); // had to do this ungly thing due to circular dependency problems :(
+				dir.directiveName in ['outpostSK', 'patrolSK']); // had to do this ungly thing due to circular dependency problems :(
 			// const skDirective = _.first(DirectiveSKOutpost.findInRoom(roomName));
 
 			if (!(skDirective && skDirective.age > 2500)) {
