@@ -68,6 +68,17 @@ export class SourceReaperOverlord extends CombatOverlord {
 		this.wishlist(defenderAmount, CombatSetups.hydralisks.sourceKeeper);
 	}
 
+	private getNextTargetLair(): StructureKeeperLair | undefined {
+		if (!this.room) return;
+		// If any lairs have an active keeper, target that
+		const activeLair = _.find(this.room.keeperLairs, lair => 
+			(lair.pos.findInRange(lair.room.sourceKeepers, 5).length > 0 && !Game.flags[lair.id])); // ignore flags[lair.id]
+		if (activeLair) return activeLair;
+		// Otherwise target whatever is closest to spawning
+		return minBy(this.room.keeperLairs,
+					 lair => lair.ticksToSpawn || Infinity); // not sure why ticksToSpawn is number | undefined
+	}
+
 	private handleReaper(reaper: CombatZerg) {
 
 		const moveOpts: any = {pathOpts: {avoidSK: false}};

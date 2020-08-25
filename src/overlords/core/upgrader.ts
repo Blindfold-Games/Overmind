@@ -23,8 +23,13 @@ export class UpgradingOverlord extends Overlord {
 	constructor(upgradeSite: UpgradeSite, priority = OverlordPriority.upgrading.upgrade) {
 		super(upgradeSite, 'upgrade', priority);
 		this.upgradeSite = upgradeSite;
-		// If new colony or boosts overflowing to storage
-		this.upgraders = this.zerg(Roles.upgrader);
+		if (this.colony.level < 8) {
+			this.upgraders = this.zerg(Roles.upgrader, {
+				boostWishlist: [boostResources.upgrade[3]]
+			});
+		} else {
+			this.upgraders = this.zerg(Roles.upgrader);
+		}
 	}
 
 	init() {

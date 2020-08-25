@@ -41,6 +41,7 @@ export class CommandCenter extends HiveCluster {
 		enableIdleObservation: true,
 		linksTransmitAt      : LINK_CAPACITY - 100,
 		refillTowersBelow    : 750,
+		processPowerThreshold: 250000, // do not process power if storage is less than this
 	};
 
 	constructor(colony: Colony, storage: StructureStorage) {
@@ -199,6 +200,13 @@ export class CommandCenter extends HiveCluster {
 				// const roomToObserve = Cartographer.findRelativeRoomName(this.pos.roomName, dx, dy);
 				this.observer.observeRoom(roomToObserve);
 			}
+		}
+	}
+
+	private processPower(): void {
+		if(this.storage && this.storage.energy > CommandCenter.settings.processPowerThreshold &&
+			this.powerSpawn && this.powerSpawn.power > 0 && this.powerSpawn.energy >= 50) {
+			this.powerSpawn.processPower();
 		}
 	}
 
