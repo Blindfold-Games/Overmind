@@ -72,14 +72,14 @@ const getDefaultTraderStats: () => TraderStats = () => ({
 // (might not always be up to date)
 export const maxMarketPrices: { [resourceType: string]: number } = {
 	default                          : 5.0,
-	[RESOURCE_HYDROGEN]              : 0.245,
-	[RESOURCE_OXYGEN]                : 0.10,
-	[RESOURCE_UTRIUM]                : 0.144,
-	[RESOURCE_LEMERGIUM]             : 0.180,
-	[RESOURCE_KEANIUM]               : 0.140,
-	[RESOURCE_ZYNTHIUM]              : 0.24,
-	[RESOURCE_CATALYST]              : 0.240,
-	[RESOURCE_ENERGY]                : 0.02,
+	[RESOURCE_HYDROGEN]              : 0.3,
+	[RESOURCE_OXYGEN]                : 0.25,
+	[RESOURCE_UTRIUM]                : 0.3,
+	[RESOURCE_LEMERGIUM]             : 0.25,
+	[RESOURCE_KEANIUM]               : 0.25,
+	[RESOURCE_ZYNTHIUM]              : 0.25,
+	[RESOURCE_CATALYST]              : 0.5,
+	[RESOURCE_ENERGY]                : 0.05,
 	[RESOURCE_CATALYZED_GHODIUM_ACID]: 1.2,
 };
 

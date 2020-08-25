@@ -376,11 +376,6 @@ export class Colony {
 		// Register physical objects across all rooms in the colony
 		$.set(this, 'sources', () => _.sortBy(_.flatten(_.map(this.rooms, room => room.sources)),
 											  source => source.pos.getMultiRoomRangeTo(this.pos)));
-		for (const source of this.sources) {
-			if(!Game.flags[source.id]) { // ignore sources with flags[source.id]
-				DirectiveHarvest.createIfNotPresent(source.pos, 'pos');
-			}
-		}
 		$.set(this, 'extractors', () =>
 			_(this.rooms)
 				.map(room => room.extractor)
@@ -388,11 +383,6 @@ export class Colony {
 				.filter(e => (e!.my && e!.room.my)
 							 || Cartographer.roomType(e!.room.name) != ROOMTYPE_CONTROLLER)
 				.sortBy(e => e!.pos.getMultiRoomRangeTo(this.pos)).value() as StructureExtractor[]);
-		if (this.controller.level >= 6) {
-			_.forEach(this.extractors, extractor => 
-				!Game.flags[extractor.id] && // ignore minerals with flags[extractor.id]
-				DirectiveExtract.createIfNotPresent(extractor.pos, 'pos'));
-		}
 		$.set(this, 'repairables', () => _.flatten(_.map(this.rooms, room => room.repairables)));
 		$.set(this, 'rechargeables', () => _.flatten(_.map(this.rooms, room => room.rechargeables)));
 		$.set(this, 'constructionSites', () => _.flatten(_.map(this.rooms, room => room.constructionSites)), 10);

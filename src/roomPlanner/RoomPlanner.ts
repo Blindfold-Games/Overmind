@@ -428,7 +428,7 @@ export class RoomPlanner {
 	/**
 	 * Check to see if there are any structures that can't be built
 	 */
-	private findCollision(ignoreRoads = true): RoomPosition | undefined {// ignoreRoads, have bunkers colliding with walls
+	private findCollision(ignoreRoads = false): RoomPosition | undefined {
 		const terrain = Game.map.getRoomTerrain(this.colony.room.name);
 		for (const structureType in this.map) {
 			if (ignoreRoads && structureType == STRUCTURE_ROAD) {
@@ -446,7 +446,7 @@ export class RoomPlanner {
 	 * Write everything to memory at the end of activation. If ignoreRoads is set, it will allow collisions with
 	 * roads, but will continue to alert you every time it fails to build a road in the terrain pos (WIP)
 	 */
-	finalize(ignoreRoads = true): void {// ignoreRoads, have bunkers colliding with walls
+	finalize(ignoreRoads = false): void {
 		const collision = this.findCollision(ignoreRoads);
 		if (collision) {
 			log.warning(`Invalid layout: collision detected at ${collision.print}!`);

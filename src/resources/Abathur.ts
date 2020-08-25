@@ -97,17 +97,17 @@ export const priorityStockAmounts: { [key: string]: number } = {
 export const wantedStockAmounts: { [key: string]: number } = {
 	UH   : 3000, 	// (+100 % attack)
 	KO   : 3000, 	// (+100 % ranged attack)
-	XGHO2: 73000, 	// (-70 % dmg taken)
-	XLHO2: 33000, 	// (+300 % heal)
-	XZHO2: 33000, 	// (+300 % fat decr - speed)
-	XZH2O: 25000, 	// (+300 % dismantle)
-	XKHO2: 33000, 	// (+300 % ranged attack)
-	XUH2O: 33000, 	// (+300 % attack)
+	XGHO2: 10000, 	// (-70 % dmg taken)
+	XLHO2: 20000, 	// (+300 % heal)
+	XZHO2: 6000, 	// (+300 % fat decr - speed)
+	XZH2O: 6000, 	// (+300 % dismantle)
+	XKHO2: 20000, 	// (+300 % ranged attack)
+	XUH2O: 20000, 	// (+300 % attack)
 	G    : 5000, 	// For nukes
 	XLH2O: 8000, 	// (+100 % build and repair)
 	LH   : 3000, 	// (+50 % build and repair)
 	XUHO2: 3000, 	// (+600 % harvest)
-	XKH2O: 30000, 	// (+300 % carry)
+	XKH2O: 3000, 	// (+300 % carry)
 	ZK   : 800,	// intermediate
 	UL   : 800,	// intermediate
 	GH   : 800,	// (+50 % upgrade)
@@ -116,7 +116,7 @@ export const wantedStockAmounts: { [key: string]: number } = {
 	GH2O : 800,	// (+80 % upgrade)
 	LH2O : 800,	// (+80 % build and repair)
 	KH2O : 800,	// (+200 % carry)
-	XGH2O: 20000,	// (+100 % upgrade)
+	XGH2O: 12000,	// (+100 % upgrade)
 };
 
 export const baseStockAmounts: { [key: string]: number } = {
